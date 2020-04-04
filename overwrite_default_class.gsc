@@ -49,8 +49,8 @@ doRandomLoadout()
 	self.Tactical = strTok("trophy_system_mp,sensor_grenade_mp,emp_grenade_mp,proximity_grenade_mp,flash_grenade_mp,willy_pete_mp", ",");
 	self.Frag = strTok("satchel_charge_mp,bouncingbetty_mp,claymore_mp,sticky_grenade_mp,frag_grenade_mp,hatchet_mp", ",");
 	
-	self.RandPrimary = RandomInt(self.Sniper.size);
-	self.RandSecondary = RandomInt(self.Weapon.size);
+	self.RandPrimary = RandomInt(self.Primary.size);
+	self.RandSecondary = RandomInt(self.Secondary.size);
 	self.RandTactical = RandomInt(self.Tactical.size);
 	self.RandFrag = RandomInt(self.Frag.size);
 	
