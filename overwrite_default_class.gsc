@@ -63,7 +63,7 @@ doRandomLoadout()
 	self giveWeapon(self.Tactical[self.RandTactical]);
 	self giveWeapon(self.Tactical[self.RandTactical]);
 	
-	self switchToWeapon(self.Sniper[self.RandSniper]);
+	self switchToWeapon(self.Primary[self.RandPrimary]);
 }
 
 takeClass()
@@ -78,7 +78,7 @@ takeClass()
 
 initPerks()
 {
-	self setperk("specialty_fallheight");
+    self setperk("specialty_fallheight");
     self setperk("specialty_fastequipmentuse");
     self setperk("specialty_fastladderclimb");
     self setperk("specialty_fastmantle");
