@@ -51,12 +51,6 @@ onPlayerSpawned()
 	{
 		self waittill( "spawned_player" );
 		
-		if( level.enableDebugMode == 1)
-		{
-			self notify("reset_debug_binds");
-			self thread debugButtonMonitor();
-			self.score = 500000;
-		}
 		if(level.round_number >= 5 && self.score < 2500) //in case players have low score and die or players join late (Helps to aid the high round, cant afford jug or gun situation)
 			self.score = 2500;
 		else if(level.round_number >= 15 && self.score < 5000)
