@@ -4,7 +4,24 @@ startCustomPowerups()
 	{
 		level.custompowerupinit = true;
 		wait 2;
-		level._zombiemode_powerup_grab = ::custom_powerup_grab;
+        //store the original custom powerup grab function, 
+        //if one exists (Origins, Buried, Grief & Turned)
+        //note that this is not intended for Grief or Turned
+        //I have no idea what will happen, probably pretty broken
+        if(isDefined(level._zombiemode_powerup_grab))
+        	level.original_zombiemode_powerup_grab = level._zombiemode_powerup_grab;
+        	
+        //delayed defining of the custom function so we're sure to
+        //override the function Origins and Buried defines for this
+        level._zombiemode_powerup_grab = ::custom_powerup_grab;
+        //message for the host to indicate that it should be all good
+        wait 2;
+		self iprintlnbold("^7Unlimited Ammo Custom Powerup Loaded!");
+        	
+        //gives host the ability to test the powerup at the start of the game
+        //can be used to make sure it's actually working and all good
+        //remove the line directly below to disable
+        self thread test_the_powerup();
 	}
 }
 initCustomPowerups() //credit goes to _Ox for the original code <3
@@ -62,6 +79,8 @@ custom_powerup_grab(powerup, player) //credit to _Ox much thx for powerup functi
 		player thread doUnlimitedAmmo(); //credit to _Ox for this one baby. its so good
 	else if(powerup.powerup_name == "fast_feet")
 		player thread doFastFeet(); //go fast as fuck boi
+	else if (isDefined(level.original_zombiemode_powerup_grab))
+		level thread [[level.original_zombiemode_powerup_grab]](s_powerup, e_player);
 }
 doFastFeet() //gotta go fast!
 {
@@ -189,6 +208,3 @@ poweruptextmove() //credit to _Ox for base string hud
 	wait 1.5;
 	self destroy();
 }
-
-
-
