@@ -56,10 +56,7 @@ onPlayerSpawned()
 		else if(level.round_number >= 15 && self.score < 5000)
 			self.score = 5000;
 		wait 5;
-		//self EnableInvulnerability();
-		self giveWeapon("ray_gun_zm");
-		self SwitchToWeapon("ray_gun_zm");
-		//self thread ConnectMessages(); //just does the connect messages when you spawn in
+		self thread ConnectMessages(); //just does the connect messages when you spawn in
 		self thread initCustomPerksOnPlayer(); //checks mapname and if it should give PHD flopper automatically
 	}
 }
