@@ -1,4 +1,4 @@
-## BO2-GSC-Releases
-These are my BO2 GSC Releases that are solo projects.
+## BO2 GSC RELEASES
+Follow the directions in the README for each mod as not all mods are the same.
 
-Follow the directions in each README for each mod.
+**@ItsCahz**
