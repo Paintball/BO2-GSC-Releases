@@ -6,7 +6,7 @@ If you want to just run the mod, use the precompiled version of the files to sav
 - Make sure to replace your _**dedicated_zm.cfg**_ file with the one for Z++
 ###### EDITING SOURCE CODE
 - Compile _**_clientids.gsc**_ as _**_clientids.gsc**_ and place it in the directory _**maps/mp/gametypes_zm/_clientids.gsc**_
-- Compile _**_zm_powerups.gsc**_ as _**_zm_powerups.gsc**_ and place it in the directory _**map/mp/zombies/_zm_powerups.gsc**_
+- Compile _**_zm_powerups.gsc**_ as _**_zm_powerups.gsc**_ and place it in the directory _**maps/mp/zombies/_zm_powerups.gsc**_
 - Make sure to replace your _**dedicated_zm.cfg**_ file with the one for Z++
 ###### UPDATES V1.2
 - _**_zm_powerups.gsc**_ now holds all functions for custom powerups
