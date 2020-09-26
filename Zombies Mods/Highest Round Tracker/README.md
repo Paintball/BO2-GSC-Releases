@@ -25,4 +25,4 @@ set NuketownPlayers "Player1, Player2"
 set TransitHighRound 1
 set TransitPlayers "Player1, Player2"
 set TownHighRound 1
-set TownPlayers "Player1, Player2"```
+set TownPlayers "Player1, Player2"
