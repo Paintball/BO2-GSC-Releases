@@ -12,7 +12,8 @@
 - Add the record into your **dedicated_zm.cfg** file *(high round number & players)*
 - When the server restarts, it will check the **dedicated_zm.cfg** file for any manually written records
 ###### EXAMPLES FOR ALL MAPS
-```set BuriedHighRound 1
+```
+set BuriedHighRound 1
 set BuriedPlayers "Player1, Player2"
 set DieRiseHighRound 1
 set DieRisePlayers "Player1, Player2"
@@ -26,3 +27,4 @@ set TransitHighRound 1
 set TransitPlayers "Player1, Player2"
 set TownHighRound 1
 set TownPlayers "Player1, Player2"
+```
