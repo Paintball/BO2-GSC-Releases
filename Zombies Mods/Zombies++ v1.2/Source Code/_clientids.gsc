@@ -17,6 +17,7 @@ init()
 	level thread onPlayerConnect(); //on connect
 	thread initServerDvars(); //initilize server dvars (credit JezuzLizard)
 	thread startCustomPerkMachines(); //custom perk machines
+	level.afterlife_give_loadout = maps/mp/gametypes_zm/_clientids::give_afterlife_loadout; //override function that gives loadout back to the player.
 	level.playerDamageStub = level.callbackplayerdamage; //damage callback for phd flopper
 	level.callbackplayerdamage = ::phd_flopper_dmg_check; //more damage callback stuff. everybody do the flop
 	//level.using_solo_revive = 0; //disables solo revive, fixing only 3 revives per game.
@@ -36,6 +37,7 @@ onPlayerConnect()
 		player thread doPHDdive();
 		player thread onPlayerSpawned();
 		player thread onPlayerDowned();
+		player thread onPlayerRevived();
 		player thread spawnIfRoundOne(); //force spawns if round 1. no more spectating one player on round 1
 	}
 }
@@ -107,19 +109,19 @@ onPlayerDowned()
 	
 	for(;;)
 	{
-		self waittill( "player_downed" );
-    	self unsetperk( "specialty_additionalprimaryweapon" ); //removes the mulekick perk functionality
+		self waittill_any( "player_downed", "fake_death", "entering_last_stand");
+    		self unsetperk( "specialty_additionalprimaryweapon" ); //removes the mulekick perk functionality
 		self unsetperk( "specialty_longersprint" ); //removes the staminup perk functionality
 		self unsetperk( "specialty_deadshot" ); //removes the deadshot perk functionality
 		self.hasPHD = undefined; //resets the flopper variable
 		self.hasMuleKick = undefined; //resets the mule kick variable
 		self.hasStaminUp = undefined; //resets the staminup variable
 		self.hasDeadshot = undefined; //resets the deadshot variable
-    	self.icon1 Destroy();self.icon1 = undefined; //deletes the perk icons and resets the variable
-    	self.icon2 Destroy();self.icon2 = undefined; //deletes the perk icons and resets the variable
-    	self.icon3 Destroy();self.icon3 = undefined; //deletes the perk icons and resets the variable
-    	self.icon4 Destroy();self.icon4 = undefined; //deletes the perk icons and resets the variable
-    }
+    		self.icon1 Destroy();self.icon1 = undefined; //deletes the perk icons and resets the variable
+    		self.icon2 Destroy();self.icon2 = undefined; //deletes the perk icons and resets the variable
+    		self.icon3 Destroy();self.icon3 = undefined; //deletes the perk icons and resets the variable
+    		self.icon4 Destroy();self.icon4 = undefined; //deletes the perk icons and resets the variable
+	}
 }
 
 doPHDdive() //credit to extinct. just edited to add self.hasPHD variable
@@ -1153,5 +1155,221 @@ isTown()
 		level thread perk_machine_spawn_init();
 		thread solo_tombstone_removal();
 		thread turn_tombstone_on();
+	}
+}
+give_afterlife_loadout()
+{
+
+	self takeallweapons();
+	loadout = self.loadout;
+	primaries = self getweaponslistprimaries();
+	if ( loadout.weapons.size > 1 || primaries.size > 1 )
+	{
+		foreach ( weapon in primaries )
+		{
+			self takeweapon( weapon );
+		}
+	}
+	i = 0;
+	while ( i < loadout.weapons.size )
+	{
+
+		if ( !isDefined( loadout.weapons[ i ] ) )
+		{
+			i++;
+
+			continue;
+		}
+		if ( loadout.weapons[ i ][ "name" ] == "none" )
+		{
+			i++;
+
+			continue;
+		}
+		self maps/mp/zombies/_zm_weapons::weapondata_give( loadout.weapons[ i ] );
+		i++;
+	}
+	self setspawnweapon( loadout.weapons[ loadout.current_weapon ] );
+	self switchtoweaponimmediate( loadout.weapons[ loadout.current_weapon ] );
+	if ( isDefined( self get_player_melee_weapon() ) )
+	{
+		self giveweapon( self get_player_melee_weapon() );
+	}
+	self maps/mp/zombies/_zm_equipment::equipment_give( self.loadout.equipment );
+	if ( isDefined( loadout.hasclaymore ) && loadout.hasclaymore && !self hasweapon( "claymore_zm" ) )
+	{
+		self giveweapon( "claymore_zm" );
+		self set_player_placeable_mine( "claymore_zm" );
+		self setactionslot( 4, "weapon", "claymore_zm" );
+		self setweaponammoclip( "claymore_zm", loadout.claymoreclip );
+	}
+	if ( isDefined( loadout.hasemp ) && loadout.hasemp )
+	{
+		self giveweapon( "emp_grenade_zm" );
+		self setweaponammoclip( "emp_grenade_zm", loadout.empclip );
+	}
+	if ( isDefined( loadout.hastomahawk ) && loadout.hastomahawk )
+	{
+		self giveweapon( self.current_tomahawk_weapon );
+		self set_player_tactical_grenade( self.current_tomahawk_weapon );
+		self setclientfieldtoplayer( "tomahawk_in_use", 1 );
+	}
+	self.score = loadout.score;
+	perk_array = maps/mp/zombies/_zm_perks::get_perk_array( 1 );
+	i = 0;
+	while ( i < perk_array.size )
+	{
+		perk = perk_array[ i ];
+		self unsetperk( perk );
+		self set_perk_clientfield( perk, 0 );
+		i++;
+	}
+	if (is_true(self.keep_perks))
+	{
+		if(is_true(self.hadphd))
+		{
+			self.hasphd = true;
+			self.hadphd = undefined;
+			self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_doubletap_zombies", 0, (1, 0.25, 1));
+		}
+	}
+	if ( isDefined( self.keep_perks ) && self.keep_perks && isDefined( loadout.perks ) && loadout.perks.size > 0 )
+	{
+		i = 0;
+		while ( i < loadout.perks.size )
+		{
+			if ( self hasperk( loadout.perks[ i ] ) )
+			{
+				i++;
+				continue;
+			}
+			if ( loadout.perks[ i ] == "specialty_quickrevive" && flag( "solo_game" ) )
+			{
+				level.solo_game_free_player_quickrevive = 1;
+			}
+			if ( loadout.perks[ i ] == "specialty_longersprint" )
+			{
+				self setperk( "specialty_longersprint" ); //removes the staminup perk functionality
+				self.hasStaminUp = true; //resets the staminup variable
+				self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_juggernaut_zombies", 0, (1, 1, 0));
+				arrayremovevalue( loadout.perks, "specialty_longersprint" );
+
+				continue;
+			}
+			if ( loadout.perks[ i ] == "specialty_additionalprimaryweapon" )
+			{
+				self setperk( "specialty_additionalprimaryweapon"); //removes the deadshot perk functionality
+				self.hasMuleKick = true; //resets the deadshot variable
+				self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_fastreload_zombies", 0, (0, 0.7, 0));
+				arrayremovevalue( loadout.perks, "specialty_additionalprimaryweapon" );
+				continue;
+			}
+			if ( loadout.perks[ i ] == "specialty_finalstand" )
+			{
+				i++;
+				continue;
+			}
+			maps/mp/zombies/_zm_perks::give_perk( loadout.perks[ i ] );
+			i++;
+			wait 0.05;
+		}
+	}
+	self.keep_perks = undefined;
+	self set_player_lethal_grenade( self.loadout.lethal_grenade );
+	if ( loadout.grenade > 0 )
+	{
+		curgrenadecount = 0;
+		if ( self hasweapon( self get_player_lethal_grenade() ) )
+		{
+			self getweaponammoclip( self get_player_lethal_grenade() );
+		}
+		else
+		{
+			self giveweapon( self get_player_lethal_grenade() );
+		}
+		self setweaponammoclip( self get_player_lethal_grenade(), loadout.grenade + curgrenadecount );
+	}
+
+}
+save_afterlife_loadout() //checked changed to match cerberus output
+{
+	primaries = self getweaponslistprimaries();
+	currentweapon = self getcurrentweapon();
+	self.loadout = spawnstruct();
+	self.loadout.player = self;
+	self.loadout.weapons = [];
+	self.loadout.score = self.score;
+	self.loadout.current_weapon = -1;
+	index = 0;
+	foreach ( weapon in primaries )
+	{
+		self.loadout.weapons[ index ] = maps/mp/zombies/_zm_weapons::get_player_weapondata( self, weapon );
+		if ( weapon == currentweapon || self.loadout.weapons[ index ][ "alt_name" ] == currentweapon )
+		{
+			self.loadout.current_weapon = index;
+		}
+		index++;
+	}
+	self.loadout.equipment = self get_player_equipment();
+	if ( isDefined( self.loadout.equipment ) )
+	{
+		self equipment_take( self.loadout.equipment );
+	}
+	if ( self hasweapon( "claymore_zm" ) )
+	{
+		self.loadout.hasclaymore = 1;
+		self.loadout.claymoreclip = self getweaponammoclip( "claymore_zm" );
+	}
+	if ( self hasweapon( "emp_grenade_zm" ) )
+	{
+		self.loadout.hasemp = 1;
+		self.loadout.empclip = self getweaponammoclip( "emp_grenade_zm" );
+	}
+	if ( self hasweapon( "bouncing_tomahawk_zm" ) || self hasweapon( "upgraded_tomahawk_zm" ) )
+	{
+		self.loadout.hastomahawk = 1;
+		self setclientfieldtoplayer( "tomahawk_in_use", 0 );
+	}
+	self.loadout.perks = afterlife_save_perks( self );
+	lethal_grenade = self get_player_lethal_grenade();
+	if ( self hasweapon( lethal_grenade ) )
+	{
+		self.loadout.grenade = self getweaponammoclip( lethal_grenade );
+	}
+	else
+	{
+		self.loadout.grenade = 0;
+	}
+	self.loadout.lethal_grenade = lethal_grenade;
+	self set_player_lethal_grenade( undefined );
+}
+
+afterlife_save_perks( ent ) //checked changed to match cerberus output
+{
+	perk_array = ent get_perk_array( 1 );
+	foreach ( perk in perk_array )
+	{
+		ent unsetperk( perk );
+	}
+	return perk_array;
+}
+onPlayerRevived()
+{
+	self endon("disconnect");
+	level endon("end_game");
+	
+	for(;;)
+	{
+		self waittill_any( "whos_who_self_revive","player_revived","fake_revive","do_revive_ended_normally", "al_t" );
+		wait 1;
+		if(is_true(self.hadPHD))
+		{
+			self setperk( "PHD_FLOPPER" ); //removes the staminup perk functionality
+			self.hasPHD = true;
+			self.hadPHD = undefined;
+			self thread drawCustomPerkHUD("specialty_doubletap_zombies", 0, (1, 0.25, 1));
+		}
+		else
+			return;
 	}
 }
