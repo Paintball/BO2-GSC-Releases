@@ -10,6 +10,7 @@
 #include maps/mp/zombies/_zm_perks;
 #include maps/mp/zombies/_zm_audio;
 #include maps/mp/zombies/_zm_score;
+#include maps/mp/zombies/_zm_equipment;
 
 init()
 {
