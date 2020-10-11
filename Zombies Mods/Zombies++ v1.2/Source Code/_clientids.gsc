@@ -1313,7 +1313,7 @@ save_afterlife_loadout() //checked changed to match cerberus output
 	self.loadout.equipment = self get_player_equipment();
 	if ( isDefined( self.loadout.equipment ) )
 	{
-		self equipment_take( self.loadout.equipment );
+		self maps/mp/zombies/_zm_equipment::equipment_take( self.loadout.equipment );
 	}
 	if ( self hasweapon( "claymore_zm" ) )
 	{
