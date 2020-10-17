@@ -31,8 +31,8 @@ init()
 	level thread onPlayerConnect();
 	level thread StartInfected();
 	level thread EndInfected();
-	wait 1;
-	level thread spawnBot(10);	
+	//wait 1;
+	//level thread spawnBot(10); //uncomment these 2 lines if you'd like to test with bots (bots r trash :( :( :( )
 }
 
 onPlayerConnect()
