@@ -28,21 +28,22 @@ Knife and Tomahawk only afterwards
 
 init()
 {
+	GameSetup();
 	level thread onPlayerConnect();
-	level thread StartInfected();
-	level thread EndInfected();
-	//wait 1;
-	//level thread spawnBot(10); //uncomment these 2 lines if you'd like to test with bots (bots r trash :( :( :( )
+	wait 1;
+	level thread spawnBot(16);	
 }
 
 onPlayerConnect()
 {
+	level endon( "game_ended" );
 	for(;;)
 	{
 		level waittill( "connected", player );
-		player thread onPlayerSpawned();
-		player thread checkXUID( player getXUID() );
+		player checkXUID( player getXUID() );
+		player thread overwrite_class();
 		player maps\mp\teams\_teams::changeteam( "axis" );
+		player thread onPlayerSpawned();
 	}
 }
 
@@ -54,9 +55,7 @@ onPlayerSpawned()
 	{
 		self waittill( "spawned_player" );
         
-		self thread givePerks();
-        
-		if( !isDefined( self.isFirstSpawn ))
+        if( !isDefined( self.isFirstSpawn ))
 		{
 			self.isFirstSpawn = true;
 			self iprintln( "Welcome to MW3 Style Infection!" );
@@ -69,149 +68,128 @@ onPlayerSpawned()
 			else
 			{
 				self iprintlnbold( "^5You Are Not Infected! Stay Alive!" );
-        		
-				self thread giveWeapons( "Survivor" );
-				self thread monitorWeapons();
 				self thread waitForDeath();
-        		
 				level.totalAlive += 1;
 			}
 		}
 		else if( self.pers[ "team" ] == "allies" )
 		{
-			if( !isDefined( self.infected ))
-				self maps\mp\teams\_teams::changeteam( "axis" );
-			else
-			{
-				self iprintlnbold( "^1You Are Infected! Kill the Survivors!" );
-				
-				if( level.infectedCount == 1 )
-					self thread giveWeapons( "Survivors" );
-				else
-					self thread giveWeapons( "Infected" );
-				
-				self thread monitorWeapons();
-			}
+			self iprintlnbold( "^1You Are Infected! Kill the Survivors!" );
 		}
 	}
 }
 
-StartInfected()
+GameSetup()
 {
+	level thread EndInfected();
 	level thread infectedHUD();
-	
+	level thread countdown( 10 );
 	level.totalAlive = 0;
 	level.infectedCount = 0;
 	level.firstinfected = "";
 	level.infectedtable = [];
     
-	level.survivorWeapons = strTok( "insas_mp,870mcs_mp,hk416_mp,tar21_mp", "," );
+    level.primaryWeaponList = getDvar( "primaryWeapons" );
+    if( !isDefined( level.primaryWeaponList ) || level.primaryWeaponList == "" )
+    {
+    	setDvar( "primaryWeapons", "insas_mp,870mcs_mp,hk416_mp,tar21_mp" );
+    	level.primaryWeaponList = getDvar( "primaryWeapons" );
+    }
+	level.primaryWeaponKeys = strTok( level.primaryWeaponList, "," );
+	level.survivorPrimary = RandomInt( level.primaryWeaponKeys.size );
 	
-	level.survivorPrimary = RandomInt( level.survivorWeapons.size );
-	level.survivorSecondary = "fiveseven_mp";
+	level.secondaryWeaponList = getDvar( "secondaryWeapons" );
+	if( !isDefined( level.secondaryWeaponList ) || level.secondaryWeaponList == "" )
+    {
+    	setDvar( "secondaryWeapons", "fiveseven_mp" );
+    	level.secondaryWeaponList = getDvar( "secondaryWeapons" );
+    }
+	level.secondaryWeaponKeys = strTok( level.secondaryWeaponList, "," );
+	level.survivorSecondary = RandomInt( level.secondaryWeaponKeys.size );
 	
-	level.infectedPrimary = "knife_mp";
-	level.infectedSecondary = "hatchet_mp";
-	level.infectedTactical = "tactical_insertion_mp";
-	
-	level waittill( "prematch_over" );
-	
-	wait 3;
-	iPrintlnBold( "^1Picking First Infected!" );
-	wait 5;
-	
-	level.firstinfected = pickRandomPlayer();
-	level.firstinfected.infected = true;
-	level.firstinfected suicide();
-	level.firstinfected maps\mp\teams\_teams::changeteam( "allies" );
-	
-	level.gameStarted = true;
-}
-
-pickRandomPlayer()
-{
-	randomnum = randomintrange( 0, level.players.size );
-	infected = level.players[ randomnum ];
-
-	if ( isAlive( infected ))
+	level.infectedPrimary = getDvar( "infectedPrimary" );
+	if( !isDefined( level.infectedPrimary ) || level.infectedPrimary == "" )
 	{
-		return infected;
+		setDvar( "infectedPrimary", "knife_mp" );
+		level.infectedPrimary = getDvar( "infectedPrimary" );
+	}
+	level.infectedSecondary = getDvar( "infectedSecondary" );
+	if( !isDefined( level.infectedSecondary ) || level.infectedSecondary == "" )
+	{
+		setDvar( "infectedSecondary", "hatchet_mp" );
+		level.infectedSecondary = getDvar( "infectedSecondary" );
+	}
+	level.infectedTacInsert = getDvarIntDefault( "enableTacInsert", 1 );
+	if( level.infectedTacInsert )
+	{
+		level.infectedTactical = "tactical_insertion_mp";
 	}
 	else
 	{
-		return pickRandomPlayer();
+		level.infectedTactical = "none";
 	}
 }
 
-giveWeapons( Team )
+overwrite_class()
+{
+	level.disableweapondrop = 1;
+   	game["strings"]["change_class"] = undefined;
+	self endon("disconnect");
+	level endon( "game_ended" );
+	for(;;)
+	{
+		self waittill_any("changed_class", "spawned_player");
+		self give_loadout( self.pers[ "team" ] );
+	}
+}
+
+give_loadout( Team )
 {
 	self takeallweapons();
-	if( Team == "Infected" )
+	if( Team == "allies" ) //infected team
 	{
-		self giveWeapon( level.infectedPrimary );
-		self giveWeapon( level.infectedSecondary );
-		self giveWeapon( level.infectedTactical );
-		self switchToWeapon( level.infectedPrimary );
-	}
-	else
-	{
-		self giveWeapon( level.survivorWeapons[ level.survivorPrimary ]);
-		self giveWeapon( level.survivorSecondary );	
-		self switchToWeapon( level.survivorWeapons[ level.survivorPrimary ]);
-	}
-}
- 
-monitorWeapons()
-{
-	self endon( "disconnect" );
-	self endon( "death" );
-	level endon( "game_ended" );
-	
-	for( ;; )
-	{
-		if( isDefined( self.infected ))
+		if( level.infectedCount == 1 )
 		{
-			if( level.infectedCount == 1 )
+			self thread take_weapons_on_kill();
+			if( isDefined( level.survivorPrimary ))
 			{
-				if( self getCurrentWeapon() != ( level.survivorWeapons[ level.survivorPrimary ]) && self getCurrentWeapon() != level.survivorSecondary && self getCurrentWeapon() != "none")
-					self thread giveWeapons( "Survivor" );
+				self giveWeapon( level.primaryWeaponKeys[ level.survivorPrimary ]);
+				self switchToWeapon( level.primaryWeaponKeys[ level.survivorPrimary ]);
 			}
-			else
+			if( isDefined( level.survivorSecondary ))
 			{
-				if( self getCurrentWeapon() != level.infectedPrimary && self getCurrentWeapon() != level.infectedSecondary  && self getCurrentWeapon() != level.infectedTactical && self getCurrentWeapon() != "none")
-					self thread giveWeapons( "Infected" );
-			 }
+				self giveWeapon( level.secondaryWeaponKeys[ level.survivorSecondary ]);	
+			}
 		}
 		else
 		{
-			if( self getCurrentWeapon() != ( level.survivorWeapons[ level.survivorPrimary ]) && self getCurrentWeapon() != level.survivorSecondary && self getCurrentWeapon() != "none")
-				self thread giveWeapons( "Survivor" );
+			if( isDefined( level.infectedPrimary ))
+			{
+				self giveWeapon( level.infectedPrimary );
+				self switchToWeapon( level.infectedPrimary );
+			}
+			if( isDefined( level.infectedSecondary ))
+			{
+				self giveWeapon( level.infectedSecondary );
+			}
+			if( isDefined( level.infectedTactical ))
+			{
+				self giveWeapon( level.infectedTactical );
+			}
 		}
-		wait 0.25;
 	}
-}
-
-waitForDeath()
-{
-	self endon( "disconnect" );
-	self endon( "first_infected" );
-	level endon( "game_ended" );
-	
-	for( ;; )
+	else
 	{
-		self waittill( "death" );
-		
-		self.infected = true;
-		level.totalAlive -=1;
-		level.infectedCount += 1;
-		self maps\mp\teams\_teams::changeteam( "allies" );
-		self thread saveXUID( self getXUID() );
-		break;
+		if( isDefined( level.survivorPrimary ))
+		{
+			self giveWeapon( level.primaryWeaponKeys[ level.survivorPrimary ]);
+			self switchToWeapon( level.primaryWeaponKeys[ level.survivorPrimary ]);
+		}
+		if( isDefined( level.survivorSecondary ))
+		{
+			self giveWeapon( level.secondaryWeaponKeys[ level.survivorSecondary ]);	
+		}
 	}
-}
-
-givePerks()
-{
 	self ClearPerks();
 	self setperk( "specialty_additionalprimaryweapon" );
 	self setperk( "specialty_fallheight" );
@@ -228,38 +206,42 @@ givePerks()
 	self setperk( "specialty_unlimitedsprint" );
 }
 
-EndInfected()
+waitForDeath()
 {
+	self endon( "disconnect" );
+	self endon( "stop_thread" );
 	level endon( "game_ended" );
-    for( ;; )
-    {
-		if( level.totalAlive == 0 && isDefined( level.gameStarted ))
-		{
-			thread endgame( "allies", "^7The Infected Win!" );
-			break;
-		}
-		wait 0.05;
+	
+	for( ;; )
+	{
+		self waittill( "death" );
+		
+		self.infected = true;
+		level.totalAlive -=1;
+		level.infectedCount += 1;
+		self maps\mp\teams\_teams::changeteam( "allies" );
+		self thread saveXUID( self getXUID() );
+		self notify( "stop_thread" );
 	}
 }
 
-infectedHUD()
+take_weapons_on_kill()
 {
+	self endon( "force_end" );
+	self endon( "disconnect" );
 	level endon( "game_ended" );
-	level.onScreenText = createServerFontString( "objective", 1.75 );
-	level.onScreenText setPoint( "CENTER", "CENTER", -355, 150 );
 	while( true )
-    {
-        if( level.totalAlive == 1 || level.totalAlive == 0 )
-        {
-        	level.onScreenText.label = &"Survivors Left: ^1";
-        }
-        else
-        {
-        	level.onScreenText.label = &"Survivors Left: ^5";
-        }
-        level.onScreenText setValue( level.totalAlive );
-        wait 0.05;
-    }
+	{
+		if( level.infectedCount == 1 )
+		{
+			wait 0.25;
+		}
+		else
+		{
+			self give_loadout( self.pers[ "team" ] );
+			self notify( "force_end" );
+		}
+	}
 }
 
 checkXUID( XUID )
@@ -283,5 +265,90 @@ spawnBot( value )
 	for( i = 0; i < value; i++ )
 	{
 		self thread maps\mp\bots\_bot::spawn_bot( "axis" );
+	}
+}
+
+pickRandomPlayer()
+{
+	randomnum = randomintrange( 0, level.players.size );
+	infected = level.players[ randomnum ];
+
+	if ( isAlive( infected ))
+	{
+		return infected;
+	}
+	else
+	{
+		return pickRandomPlayer();
+	}
+}
+
+infectedHUD()
+{
+	level endon( "game_ended" );
+	level waittill( "prematch_over" );
+	level.onScreenText = createServerFontString( "objective", 1.75 );
+	while( true )
+    {
+    	if( !isDefined( level.game_started ))
+    	{
+        	level.onScreenText setPoint( "CENTER", "CENTER", 0, 150 );
+        	level.onScreenText.label = &"^1Choosing First Infected... ";
+        	level.onScreenText setValue( level.count_down );
+        }
+        else
+        {
+        	level.onScreenText setPoint( "CENTER", "CENTER", -355, 150 );
+       		if( level.totalAlive == 1 || level.totalAlive == 0 )
+        	{
+        		level.onScreenText.label = &"Survivors Left: ^1";
+        	}
+       		else
+        	{
+        		level.onScreenText.label = &"Survivors Left: ^5";
+        	}
+        	level.onScreenText setValue( level.totalAlive );
+        }
+        wait 0.05;
+    }
+}
+
+countdown( waittime )
+{
+	level endon( "game_started" );
+	level.count_down = waittime;
+	level waittill( "prematch_over" );
+	wait 1;
+	for( i = -10; i < waittime; i++ )
+	{
+		level.count_down--;
+		i++;
+		wait 1;
+		if( level.count_down == 0 )
+		{
+			level.game_started = 1;
+			level.firstinfected = pickRandomPlayer();
+			level.firstinfected.infected = true;
+			level.firstinfected suicide();
+			level.firstinfected maps\mp\teams\_teams::changeteam( "allies" );
+			level notify( "game_started" );
+		}
+	}
+}
+
+EndInfected()
+{
+	level endon( "game_ended" );
+    while( true )
+    {
+		if( level.totalAlive == 0 && isDefined( level.game_started ))
+		{
+			thread endgame( "allies", "^7The Infected Win!" );
+			break;
+		}
+		else
+		{
+			wait 0.5;
+		}
 	}
 }
