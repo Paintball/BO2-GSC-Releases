@@ -1,3 +1,3 @@
 # MW3 STYLED INFECTED
 ## DIRECTIONS
-- Compile _**_clientids.gsc**_ as _**_clientids.gsc**_ and place it in the directory _**maps/mp/gametypes/_clientids.gsc**_
+- Compile _**tdm.gsc**_ as _**tdm.gsc**_ and place it in the directory _**maps/mp/gametypes/tdm.gsc**_
