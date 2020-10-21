@@ -43,7 +43,7 @@ main() //checked matches cerberus output
 	setscoreboardcolumns( "score", "kills", "deaths", "kdratio", "assists" );
 	
     thread setup_infected();
-    thread add_bots(); //use this to test with bots!!!
+    //thread add_bots(); //use this to test with bots!!!
 }
 
 onstartgametype() //checked changed to match cerberus output
