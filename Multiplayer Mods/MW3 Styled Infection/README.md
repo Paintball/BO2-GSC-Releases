@@ -5,7 +5,9 @@
 Customizable DVARS that can be used to edit the game settings.
 You can copy paste these DVARS into your dedicated.cfg file and edit values.
 ALL DVARS ARE SET TO THEIR CURRENT DEFAULTS
+
 IF YOU DON'T ADD THESE INTO YOUR CFG FILE -- IT WILL LOAD THESE DEFAULT DVARS
+
 ```
 scr_scorestreaks 0 //0 = scorestreaks disabled, 1 = scorestreaks enabled
 set infectedTimelimit 10 //timelimit in minutes (default 10)
