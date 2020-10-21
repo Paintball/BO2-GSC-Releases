@@ -43,7 +43,7 @@ main() //checked matches cerberus output
 	setscoreboardcolumns( "score", "kills", "deaths", "kdratio", "assists" );
 	
     thread setup_infected();
-    //thread add_bots(); //use this to test with bots!!!
+    thread add_bots(); //use this to test with bots!!!
 }
 
 onstartgametype() //checked changed to match cerberus output
@@ -339,6 +339,9 @@ setup_infected()
 	level.infectedSecondary = RandomInt( level.infectedSecondaryKeys.size );
 	level.infectedTacInsert = getDvarIntDefault( "enableTacInsert", 1 );
 	level.enable_scavenger = getDvarIntDefault( "enableScavenger", 1 );
+	level.firstinfectedloadout = getDvarIntDefault( "enableFirstInfectedLoadout", 1 );
+	if( !level.firstinfectedloadout )
+		level.first_blood = 1;
 }
 
 onPlayerConnect()
@@ -377,6 +380,7 @@ onPlayerKilled( einflictor, attacker, idamage, smeansofdeath, sweapon, vdir, shi
 		if( !isDefined( level.first_blood ) && self.name != level.firstinfected.name )
 		{
 			level.first_blood = 1;
+			wait 0.05;
 			foreach( player in level.players )
 			{
 				if( player.pers[ "team" ] == "allies" )
