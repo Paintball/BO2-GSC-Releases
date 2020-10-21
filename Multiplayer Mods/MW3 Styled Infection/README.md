@@ -2,10 +2,13 @@
 ## DIRECTIONS
 - Compile _**tdm.gsc**_ as _**tdm.gsc**_ and place it in the directory _**maps/mp/gametypes/tdm.gsc**_
 
-Customizable DVARS that can be used to edit the game settings
+Customizable DVARS that can be used to edit the game settings.
+You can copy paste these DVARS into your dedicated.cfg file and edit values.
+ALL DVARS ARE SET TO THEIR CURRENT DEFAULTS
+IF YOU DON'T ADD THESE INTO YOUR CFG FILE -- IT WILL LOAD THESE DEFAULT DVARS
 ```
 scr_scorestreaks 0 //0 = scorestreaks disabled, 1 = scorestreaks enabled
-set infectedTimelimit 15 //timelimit in minutes (default 10)
+set infectedTimelimit 10 //timelimit in minutes (default 10)
 set enableFirstInfectedLoadout 1 //first infected gets survivor loadout - 0 = disable, 1 = enable
 
 //you can add as many guns as you choose, it will choose randomly from list created
@@ -25,7 +28,7 @@ set enableTacInsert 1 //0 = disable tacinserts, 1 = enable
 //dvars without comments//
 
 scr_scorestreaks 0
-set infectedTimelimit 15
+set infectedTimelimit 10
 set enableFirstInfectedLoadout 1
 
 set survivorPrimary "hk416_mp+reflex+extclip,insas_mp+extclip+rf,pdw57_mp+silencer+extclip"
