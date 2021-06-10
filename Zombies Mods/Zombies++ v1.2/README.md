@@ -15,3 +15,7 @@ If you want to just run the mod, use the precompiled version of the files to sav
 - Fixed Zombie Blood
 - Fixed Zombie Counter
 - Optimized Code for Stability
+###### UPDATES V1.3
+- _**_clientids.gsc**_ now holds all functions for Z++ as a Plutonium update broke the old files
+- Disabled Staminup on Motd to prevent crashes with the afterlife system
+- Disabled Staminup & Deadshot on Die Rise to prevent crashes with Who's Who
