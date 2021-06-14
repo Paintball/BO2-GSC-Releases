@@ -90,7 +90,7 @@ visual_fix()
 			wait 0.05;
 		}
 	}
-	else if( level.script == "zm_prison" )
+	else if( level.script == "zm_prison" || level.script == "zm_tomb" )
 	{
 		while( getDvar( "r_lightTweakSunLight" ) != 0 )
 		{
