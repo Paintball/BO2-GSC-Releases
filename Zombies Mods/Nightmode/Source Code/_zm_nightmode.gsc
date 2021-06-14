@@ -49,7 +49,7 @@ enable_night_mode()
 	}
 	else if( level.script == "zm_tomb" )
 	{
-		self setclientdvar( "r_exposureValue", 4.25 );
+		self setclientdvar( "r_exposureValue", 4 );
 	}
 	else if( level.script == "zm_nuked" )
 	{
