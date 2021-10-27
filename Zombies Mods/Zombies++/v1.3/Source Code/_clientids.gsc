@@ -18,7 +18,7 @@ init()
 	level thread onPlayerConnect(); //on connect
 	thread initServerDvars(); //initilize server dvars (credit JezuzLizard)
 	thread startCustomPerkMachines(); //custom perk machines
-	level.afterlife_give_loadout = maps/mp/gametypes_zm/_clientids::give_afterlife_loadout; //override function that gives loadout back to the player.
+	level.afterlife_give_loadout = ::give_afterlife_loadout; //override function that gives loadout back to the player.
 	level.playerDamageStub = level.callbackplayerdamage; //damage callback for phd flopper
 	level.callbackplayerdamage = ::phd_flopper_dmg_check; //more damage callback stuff. everybody do the flop
 	//level.using_solo_revive = 0; //disables solo revive, fixing only 3 revives per game.
@@ -1221,7 +1221,7 @@ give_afterlife_loadout()
 		{
 			self.hasphd = true;
 			self.hadphd = undefined;
-			self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_doubletap_zombies", 0, (1, 0.25, 1));
+			self thread drawCustomPerkHUD("specialty_doubletap_zombies", 0, (1, 0.25, 1));
 		}
 	}
 	if ( isDefined( self.keep_perks ) && self.keep_perks && isDefined( loadout.perks ) && loadout.perks.size > 0 )
@@ -1242,7 +1242,7 @@ give_afterlife_loadout()
 			{
 				self setperk( "specialty_longersprint" ); //removes the staminup perk functionality
 				self.hasStaminUp = true; //resets the staminup variable
-				self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_juggernaut_zombies", 0, (1, 1, 0));
+				self thread drawCustomPerkHUD("specialty_juggernaut_zombies", 0, (1, 1, 0));
 				arrayremovevalue( loadout.perks, "specialty_longersprint" );
 
 				continue;
@@ -1251,7 +1251,7 @@ give_afterlife_loadout()
 			{
 				self setperk( "specialty_additionalprimaryweapon"); //removes the deadshot perk functionality
 				self.hasMuleKick = true; //resets the deadshot variable
-				self thread maps/mp/gametypes_zm/_clientids::drawCustomPerkHUD("specialty_fastreload_zombies", 0, (0, 0.7, 0));
+				self thread drawCustomPerkHUD("specialty_fastreload_zombies", 0, (0, 0.7, 0));
 				arrayremovevalue( loadout.perks, "specialty_additionalprimaryweapon" );
 				continue;
 			}
